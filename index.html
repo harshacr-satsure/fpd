@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DF</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  </head>
+  <style>
+    #snackbar {
+        visibility: hidden;
+        min-width: 250px;
+        margin-left: -125px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 2px;
+        padding: 16px;
+        position: fixed;
+        left: 50%;
+        bottom: 30px;
+        font-size: 17px;
+      }
+      
+      #snackbar.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        animation: fadein 0.5s, fadeout 0.5s 2.5s;
+      }
+      
+      @-webkit-keyframes fadein {
+        from {bottom: 0; opacity: 0;} 
+        to {bottom: 30px; opacity: 1;}
+      }
+      
+      @keyframes fadein {
+        from {bottom: 0; opacity: 0;}
+        to {bottom: 30px; opacity: 1;}
+      }
+      
+      @-webkit-keyframes fadeout {
+        from {bottom: 30px; opacity: 1;} 
+        to {bottom: 0; opacity: 0;}
+      }
+      
+      @keyframes fadeout {
+        from {bottom: 30px; opacity: 1;}
+        to {bottom: 0; opacity: 0;}
+      }
+    .card-container {
+      display: flex; /* Use flexbox to arrange items */
+      justify-content: space-between; /* Distribute space between cards */
+    }
+
+    .card {
+      width: 45%; /* Adjust the width as needed */
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    #map {
+      width: auto; /* Map width will match the width of its parent card */
+      height: calc(100vh - 122px) !important; /* Map height adjusts proportionally */
+    }
+    .btn-submit{
+        width: 200px;
+        height: 40px;
+        border: none;
+        outline: none;
+        color: white;
+        background: #2caf2ce6;
+        border-radius: 5px;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    input[type=text], select {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .cardSelector {
+        padding: 10px;
+        font-size: 16px;
+        width: 300px;
+    }
+
+    /* Style for the options */
+    .option {
+        background-color: lightgray;
+        color: darkblue;
+        padding: 5px;
+        width: 300px;
+    }
+  </style>
+  <body style="text-align: center">
+    
+    <div class="optionclass">
+        <select class="cardSelector" >
+            <option class="option" value="card1">DF Corridor</option>
+            <option class="option" value="card2">DF with turn</option>
+        </select>
+    </div>
+    <div id="snackbar"></div>
+    <div class="card-container">
+        <div id="card1"  class="card">
+            <h4>DF Corridor</h4>
+          <form id="card1form">
+            <label for="arp">ARP:</label>
+            <input
+              type="text"
+              id="arp1"
+              name="arp1"
+              placeholder="Enter latitude"
+            />
+            <input
+              type="text"
+              id="arp2"
+              name="arp2"
+              placeholder="Enter longitude"
+            /><br /><br />
+  
+            <label for="rwyelev">RWY Elevation:</label>
+            <input
+              type="text"
+              id="rwyelevInput"
+              name="rwyelevInput"
+              placeholder="Enter RWY Elevation"
+            /><br /><br />
+  
+            <label for="arpelev">ARP Elevation:</label>
+            <input
+              type="text"
+              id="arpelevInput"
+              name="arpelevInput"
+              placeholder="Enter ARP Elevation"
+            /><br /><br />
+  
+            <label for="cwy">Clearway(m):</label>
+            <input
+              type="text"
+              id="cwy"
+              name="cwy"
+              placeholder="Enter Clearway"
+            /><br /><br />
+  
+            <label for="category">Category:</label>
+            <input
+              type="text"
+              id="category"
+              name="category"
+              placeholder="Enter Category(A/B/C/D)"
+            /><br /><br />
+  
+            <label for="ias">IAS(KT):</label>
+            <input
+              type="text"
+              id="ias"
+              name="ias"
+              placeholder="Enter IAS"
+            /><br /><br />
+  
+            <label for="pdg">PDG(%):</label>
+            <input
+              type="text"
+              id="pdg"
+              name="pdg"
+              placeholder="Enter PDG"
+            /><br /><br />
+  
+            <label for="abdst">DER to Turn Point Distace(Nm):</label>
+            <input
+              type="text"
+              id="abdst"
+              name="abdst"
+              placeholder="Enter Distace"
+            /><br /><br />
+  
+            <label for="turn_angle">Turn Angle(0-30):</label>
+            <input
+              type="text"
+              id="turn_angle"
+              name="turn_angle"
+              placeholder="Enter Turn Angle (0-30)"
+            /><br /><br />
+  
+            <label for="turn_direction">Turn Direction:</label>
+            <input
+              type="text"
+              id="turn_direction"
+              name="turn_direction"
+              placeholder="right/left"
+            /><br /><br />
+  
+            <label for="bearing">Bearing:</label>
+            <input
+              type="text"
+              id="bearing"
+              name="bearing"
+              placeholder="Enter Bearing"
+            /><br /><br />
+  
+            <label for="endpoint">Endpoint:</label>
+            <input
+              type="text"
+              id="endpoint1"
+              name="endpoint1"
+              placeholder="Enter latitude"
+            />
+            <input
+              type="text"
+              id="endpoint2"
+              name="endpoint2"
+              placeholder="Enter longitude"
+            /><br /><br />
+  
+            <label for="alt_ep">Altitude at Endpoint(m):</label>
+            <input
+              type="text"
+              id="alt_ep"
+              name="alt_ep"
+              placeholder="Enter Altitude at Endpoint"
+            /><br /><br />
+  
+            <button class = "btn-submit" type="button" onclick="callAPICard1()">Submit</button>
+          </form>
+        </div>
+        <div id="card2"  class="card" >
+            <h4>DF with Turn</h4>
+          <form id="card2form">
+            <label for="case">Case:</label>
+            <input
+              type="text"
+              id="card2case"
+              name="card2case"
+              placeholder="Enter Case (0/1/2/3)"
+            /><br /><br />
+  
+            <label for="category">Category:</label>
+            <input
+              type="text"
+              id="card2category"
+              name="card2category"
+              placeholder="Enter Category(A/B/C/D)"
+            /><br /><br />
+  
+            <label for="cwy">Clearway(m):</label>
+            <input
+              type="text"
+              id="card2cwy"
+              name="card2cwy"
+              placeholder="Enter Clearway"
+            /><br /><br />
+  
+  
+            <label for="arpelev">ARP Elevation:</label>
+            <input
+              type="text"
+              id="card2arpelevInput"
+              name="card2arpelevInput"
+              placeholder="Enter ARP Elevation"
+            /><br /><br />
+            
+            <label for="card2rwyelev">RWY Elevation:</label>
+            <input
+              type="text"
+              id="card2rwyelevInput"
+              name="card2rwyelevInput"
+              placeholder="Enter RWY Elevation"
+            /><br /><br />
+
+            <label for="alt_ep">Altitude at Endpoint(m):</label>
+            <input
+              type="text"
+              id="card2alt_ep"
+              name="card2alt_ep"
+              placeholder="Enter Altitude at Endpoint"
+            /><br /><br />
+  
+            <label for="alt_lstp">Altitude at WPT-C(m):</label>
+            <input
+              type="text"
+              id="card2alt_lstp"
+              name="card2alt_lstp"
+              placeholder="Enter Altitude at WPT-C"
+            /><br /><br />
+  
+            <label for="ias">IAS(KT):</label>
+            <input
+              type="text"
+              id="card2ias"
+              name="card2ias"
+              placeholder="Enter IAS"
+            /><br /><br />
+  
+            <label for="pdg">PDG(%) (Case-3 10%-PDG):</label>
+            <input
+              type="text"
+              id="card2pdg"
+              name="card2pdg"
+              placeholder="Enter PDG"
+            /><br /><br />
+  
+            <label for="turn_angle">Turn Angle(0-30):</label>
+            <input
+              type="text"
+              id="card2turn_angle"
+              name="card2turn_angle"
+              placeholder="Enter Turn Angle (0-30)"
+            /><br /><br />
+  
+            <label for="turn_direction">Turn Direction:</label>
+            <input
+              type="text"
+              id="card2turn_direction"
+              name="card2turn_direction"
+              placeholder="right/left"
+            /><br /><br />
+  
+            <label for="bearing">Bearing:</label>
+            <input
+              type="text"
+              id="card2bearing"
+              name="card2bearing"
+              placeholder="Enter Bearing"
+            /><br /><br />
+
+            <label for="abdst">DER to Turn Point Distace(Nm):</label>
+            <input
+              type="text"
+              id="card2abdst"
+              name="card2abdst"
+              placeholder="Enter distace DER to Turn Point Distace(Nm)"
+            /><br /><br />
+  
+            <label for="bcdst">Distace from TP - WTPC(Nm):</label>
+            <input
+              type="text"
+              id="card2bcdst"
+              name="card2bcdst"
+              placeholder="Enter distace from TP - WTPC"
+            /><br /><br />
+            
+            <label for="arp">ARP:</label>
+            <input
+              type="text"
+              id="card2arp1"
+              name="card2arp1"
+              placeholder="Enter latitude"
+            />
+            <input
+              type="text"
+              id="card2arp2"
+              name="card2arp2"
+              placeholder="Enter longitude"
+            /><br /><br />
+            
+            <label for="startpoint">Startpoint ThrPoint:</label>
+            <input
+              type="text"
+              id="card2startpoint1"
+              name="card2startpoint1"
+              placeholder="Enter latitude"
+            />
+            <input
+              type="text"
+              id="card2startpoint2"
+              name="card2startpoint2"
+              placeholder="Enter longitude"
+            /><br /><br />
+  
+            <label for="endpoint">Endpoint of Runway (DER):</label>
+            <input
+              type="text"
+              id="card2endpoint1"
+              name="card2endpoint1"
+              placeholder="Enter latitude"
+            />
+            <input
+              type="text"
+              id="card2endpoint2"
+              name="card2endpoint2"
+              placeholder="Enter longitude"
+            /><br /><br />
+            <button class = "btn-submit" type="button" onclick="callAPICard2()">Submit</button>
+          </form>
+        </div>
+        <div class="card">
+            <div id="map" style="height: 600px"></div>
+          </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>  
+    <script>
+
+      const map = L.map("map").setView([12.995, 80.25], 10);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+      
+      $(document).ready(function(){
+            $('#card2').hide()
+            $('.cardSelector').on('change',function(){
+                let option=$(this).val()
+                if(option === 'card1'){
+                    $('#card2').hide()
+                    $('#card1').show()
+                    
+                }else {
+                    $('#card1').hide()
+                    $('#card2').show()
+                }
+
+            })
+      })
+      async function callAPICard1() {
+        map.eachLayer(function(layer){
+            if(!!layer.toGeoJSON){
+                map.removeLayer(layer)
+            }
+        })
+        const payload = {};
+        const arp1Value = document.getElementById("arp1").value;
+        const arp2Value = document.getElementById("arp2").value;
+        const endpoint1Value = document.getElementById("endpoint1").value;
+        const endpoint2Value = document.getElementById("endpoint2").value;
+        const endpoint = [
+          parseFloat(endpoint1Value),
+          parseFloat(endpoint2Value),
+        ];
+        var zoominarp = [parseFloat(arp1Value), parseFloat(arp2Value)];
+        const arp = [parseFloat(arp1Value), parseFloat(arp2Value)];
+        const arpelevValue = parseFloat(
+          document.getElementById("arpelevInput").value
+        );
+        const rwyelevValue = parseFloat(
+          document.getElementById("rwyelevInput").value
+        );
+        const cwy = parseFloat(document.getElementById("cwy").value);
+        const category = document.getElementById("category").value;
+        const ias = parseFloat(document.getElementById("ias").value);
+        const pdg = parseFloat(document.getElementById("pdg").value);
+        const abdst = parseFloat(document.getElementById("abdst").value);
+        const turn_angle = parseFloat(
+          document.getElementById("turn_angle").value
+        );
+        const turn_direction = document.getElementById("turn_direction").value;
+        const bearing = parseFloat(document.getElementById("bearing").value);
+        const alt_ep = parseFloat(document.getElementById("alt_ep").value);
+        payload["arpelev"] = arpelevValue;
+        payload["arp"] = arp;
+        payload["endpoint"] = endpoint;
+        payload["rwyelev"] = rwyelevValue;
+        payload["cwy"] = cwy;
+        payload["category"] = category;
+        payload["ias"] = ias;
+        payload["pdg"] = pdg;
+        payload["abdst"] = abdst;
+        payload["turn_angle"] = turn_angle;
+        payload["turn_direction"] = turn_direction;
+        payload["bearing"] = bearing;
+        payload["alt_ep"] = alt_ep;
+
+        try{
+         let response = await fetch("https://2fa5-106-51-79-136.ngrok-free.app/v1/create/directtofix/corridor", {
+         method: "POST",
+         headers: {
+             accept: "application/json",
+             "Content-Type": "application/json",
+         },
+         body: JSON.stringify(payload),
+         })
+         let {data, status} =  await response.json()
+         console.log(data, status)
+         if(status==true){
+            console.log("here",data)
+            var primary = data["primary"];
+            var secondary = data["secondary"];
+            L.geoJSON(primary).addTo(map);
+            L.geoJSON(secondary).addTo(map);
+         }
+         else {
+            var x = document.getElementById("snackbar");
+            x.className = "show"
+            x.innerHTML=data.toString()
+            setTimeout(function(){ 
+                x.className = x.className.replace("show", ""); 
+            }, 3000);
+         }
+        }catch(e){
+            console.log(e)
+        }}
+    
+      async function callAPICard2() {
+        map.eachLayer(function(layer){
+            if(!!layer.toGeoJSON){
+                map.removeLayer(layer)
+            }
+        })
+        const payload = {};
+        const arp1Value = document.getElementById("card2arp1").value;
+        const arp2Value = document.getElementById("card2arp2").value;
+        const endpoint1Value = document.getElementById("card2endpoint1").value;
+        const endpoint2Value = document.getElementById("card2endpoint2").value;
+        const endpoint = [
+          parseFloat(endpoint1Value),
+          parseFloat(endpoint2Value),
+        ];
+        const arp = [parseFloat(arp1Value), parseFloat(arp2Value)];
+        var zoominarp = [parseFloat(arp1Value), parseFloat(arp2Value)];
+        const arpelevValue = parseFloat(
+          document.getElementById("card2arpelevInput").value
+        );
+        const rwyelevValue = parseFloat(
+          document.getElementById("card2rwyelevInput").value
+        );
+        const cwy = parseFloat(document.getElementById("card2cwy").value);
+        const category = document.getElementById("card2category").value;
+        const ias = parseFloat(document.getElementById("card2ias").value);
+        const pdg = parseFloat(document.getElementById("card2pdg").value);
+        const abdst = parseFloat(document.getElementById("card2abdst").value);
+        const turn_angle = parseFloat(
+          document.getElementById("card2turn_angle").value
+        );
+        const turn_direction = document.getElementById("card2turn_direction").value;
+        const bearing = parseFloat(document.getElementById("card2bearing").value);
+        const alt_ep = parseFloat(document.getElementById("card2alt_ep").value);
+        const alt_lstp = parseFloat(document.getElementById("card2alt_lstp").value);
+        const caseinteger = parseFloat(document.getElementById("card2case").value);
+        const bcdst = parseFloat(document.getElementById("card2bcdst").value);
+        const startpoint1Value = document.getElementById("card2startpoint1").value;
+        const startpoint2Value = document.getElementById("card2startpoint2").value;
+        const startpoint = [
+          parseFloat(startpoint1Value),
+          parseFloat(startpoint2Value),
+        ];
+        payload["arpelev"] = arpelevValue;
+        payload["arp"] = arp;
+        payload["endpoint"] = endpoint;
+        payload["rwyelev"] = rwyelevValue;
+        payload["cwy"] = cwy;
+        payload["category"] = category;
+        payload["ias"] = ias;
+        payload["pdg"] = pdg;
+        payload["abdst"] = abdst;
+        payload["turn_angle"] = turn_angle;
+        payload["turn_direction"] = turn_direction;
+        payload["bearing"] = bearing;
+        payload["alt_ep"] = alt_ep;
+        payload["bcdst"] = bcdst;
+        payload["alt_lstp"] = alt_lstp;
+        payload["case"] = caseinteger;
+        payload["startpoint"] = startpoint;
+        console.log("payload",payload)
+        let response = await fetch("https://2fa5-106-51-79-136.ngrok-free.app/v1/create/directtofix/turn", {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        })
+        try{
+         let {data, status} =  await response.json()
+         if(status==true){
+            console.log("here",data)
+            var primary = data["primary"];
+            var secondary = data["secondary"];
+            L.geoJSON(primary).addTo(map);
+            L.geoJSON(secondary).addTo(map);
+         }
+         else {
+            var x = document.getElementById("snackbar");
+            x.className = "show"
+            x.innerHTML=data.toString()
+            setTimeout(function(){ 
+                x.className = x.className.replace("show", ""); 
+            }, 3000);
+         }
+        }catch(e){
+            console.log(e)
+        }
+      }
+    
+    </script>
+  </body>
+</html>
